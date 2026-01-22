@@ -30,7 +30,7 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'La contraseña es obligatoria' })
   password: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsInt({ message: 'El id del rol debe ser un número entero' })
   @IsPositive({ message: 'El id del rol debe ser un número positivo' })
   id_rol?: number;

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -8,6 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
+     private readonly logger = new Logger(UsersService.name);
     constructor(
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
@@ -22,6 +23,7 @@ export class UsersService {
      * @returns Usuario creado 
      */
     async createUser(userData: CreateUserDto): Promise<{ user: Partial<User>; message: string }> {
+         this.logger.log(`Creando usuario: ${userData.correo}`);
         // 1. Validar que el rol existe 
         let rol: Role | null = null;
         if (userData.id_rol) {
@@ -64,5 +66,27 @@ export class UsersService {
             }
             throw new InternalServerErrorException('Error al crear el usuario');
         }
+    }
+
+
+    /**
+     * Consulta un usuario por su correo y retorna los permisos asociados a su rol
+     * @param correo - Correo del usuario a buscar
+     * @returns Array con id y nombre de los permisos del usuario, o null si no existe
+     */
+    async findByEmailWithPermissions(correo: string): Promise<User | null> {
+        
+        const user = await this.usersRepository.findOne({
+            where: { correo },
+            relations: ['rol', 'rol.permisos'],
+        });
+
+        if (!user) {
+            this.logger.warn(`Usuario no encontrado: ${correo}`);
+            return null;
+        }
+
+
+          return user;
     }
 }

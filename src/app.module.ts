@@ -26,7 +26,7 @@ import { PermissionModule } from './modules/permission/permission.module';
         database: configService.get('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('NODE_ENV') === 'development',
-        logging: configService.get('NODE_ENV') === 'development',
+        logging: false,
       }),
       inject: [ConfigService],
     }),
