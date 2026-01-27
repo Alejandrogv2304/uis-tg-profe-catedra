@@ -89,4 +89,12 @@ export class UsersService {
 
           return user;
     }
+
+
+    async findByEmail(correo: string): Promise<User | null> {
+    return await this.usersRepository.findOne({
+    where: { correo },
+    relations: ['rol'],
+  });
+}
 }
