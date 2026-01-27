@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -82,4 +83,48 @@ export class AuthService {
       },
     };
   }
+
+  async changePassword(changePasswordDto:ChangePasswordDto, userCorreo:string):Promise<{message:string}> {
+  const { old_password, new_password } = changePasswordDto;
+
+  // 1. Buscar usuario con hash y permisos usando el metodo de UserService
+    const user = await this.usersService.findByEmailWithPermissions(userCorreo);
+  
+
+    //Verificacion de que no sea un usuario eliminado o inactivo
+    if (!user || user.deleted_at) {
+      this.logger.warn(`Login fallido: usuario no encontrado o inactivo`);
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+  // 1. Validación de contraseña
+   let isPasswordValid: boolean;
+     try {
+      isPasswordValid = await bcrypt.compare(old_password, user.hash);
+    } catch (error) {
+    this.logger.error(`Error al validar contraseña: ${error.message}`);
+    throw new UnauthorizedException('Error al validar credenciales');
+    }
+
+    if (!isPasswordValid) {
+      this.logger.warn(`Contraseña incorrecta`);
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    // 2. Encriptar nueva contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(new_password, salt);
+
+    //3.Actualizar la contraseña en la base de datos
+    await this.usersService.updatePassword(user.id_usuario, hash, salt);
+
+    this.logger.log(`Contraseña actualizada exitosamente para usuario ${user.correo}`);
+
+    return {
+      message: 'Contraseña actualizada exitosamente',
+    };
+
+}
+
+
 }

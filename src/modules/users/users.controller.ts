@@ -11,7 +11,7 @@ export class UsersController {
     //Controlador para el método de creación de usuario
     @Post()
     async createUser(
-        @Body() createUserDto: CreateUserDto
+        @Body() createUserDto: CreateUserDto,
     ){
         return this.usersService.createUser(createUserDto);
     }

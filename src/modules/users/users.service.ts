@@ -97,4 +97,15 @@ export class UsersService {
     relations: ['rol'],
   });
 }
+
+
+ async updatePassword(userId: number, newHash: string, newSalt: string): Promise<void> {
+   await this.usersRepository.update(userId, {
+     hash: newHash,
+     salt: newSalt,
+   });
+ }
+
+
+
 }
