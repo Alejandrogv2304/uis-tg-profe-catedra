@@ -8,7 +8,6 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 
-
 @Entity('usuario')
 export class User {
   @PrimaryGeneratedColumn({ name: 'id_usuario' })
@@ -29,13 +28,13 @@ export class User {
   @Column({ length: 256 })
   salt: string;
 
-  @ManyToOne(() => Role, (rol) => rol.usuarios, { 
+  @ManyToOne(() => Role, (rol) => rol.usuarios, {
     nullable: true,
-    onDelete: 'SET NULL' 
+    onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'id_rol' })
   rol: Role;
 
-  @DeleteDateColumn()  
+  @DeleteDateColumn()
   deleted_at?: Date;
 }

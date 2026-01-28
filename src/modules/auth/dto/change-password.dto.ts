@@ -1,8 +1,7 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsString, MinLength } from 'class-validator';
 
 export class ChangePasswordDto {
   @IsString({ message: 'La contraseña debe ser una cadena de texto' })
-  
   old_password: string;
 
   @IsString({ message: 'La contraseña debe ser una cadena de texto' })

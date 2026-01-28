@@ -8,15 +8,15 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
-    private readonly logger = new Logger(AuthService.name);
+  private readonly logger = new Logger(AuthService.name);
 
-    constructor(
+  constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
 
-   async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto) {
     const { correo, password } = loginDto;
     this.logger.log(`Intento de login`);
 
@@ -30,12 +30,12 @@ export class AuthService {
     }
 
     // 2. Validación de contraseña
-   let isPasswordValid: boolean;
-     try {
+    let isPasswordValid: boolean;
+    try {
       isPasswordValid = await bcrypt.compare(password, user.hash);
     } catch (error) {
-    this.logger.error(`Error al validar contraseña: ${error.message}`);
-    throw new UnauthorizedException('Error al validar credenciales');
+      this.logger.error(`Error al validar contraseña: ${error}`);
+      throw new UnauthorizedException('Error al validar credenciales');
     }
 
     if (!isPasswordValid) {
@@ -44,7 +44,7 @@ export class AuthService {
     }
 
     // Mapeo de permisos
-    const permisos = user.rol?.permisos?.map(p => p.nombre) || [];
+    const permisos = user.rol?.permisos?.map((p) => p.nombre) || [];
 
     // 4. Creación de payloads
     const payloadAccess = {
@@ -84,12 +84,14 @@ export class AuthService {
     };
   }
 
-  async changePassword(changePasswordDto:ChangePasswordDto, userCorreo:string):Promise<{message:string}> {
-  const { old_password, new_password } = changePasswordDto;
+  async changePassword(
+    changePasswordDto: ChangePasswordDto,
+    userCorreo: string,
+  ): Promise<{ message: string }> {
+    const { old_password, new_password } = changePasswordDto;
 
-  // 1. Buscar usuario con hash y permisos usando el metodo de UserService
+    // 1. Buscar usuario con hash y permisos usando el metodo de UserService
     const user = await this.usersService.findByEmailWithPermissions(userCorreo);
-  
 
     //Verificacion de que no sea un usuario eliminado o inactivo
     if (!user || user.deleted_at) {
@@ -97,13 +99,13 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-  // 1. Validación de contraseña
-   let isPasswordValid: boolean;
-     try {
+    // 1. Validación de contraseña
+    let isPasswordValid: boolean;
+    try {
       isPasswordValid = await bcrypt.compare(old_password, user.hash);
     } catch (error) {
-    this.logger.error(`Error al validar contraseña: ${error.message}`);
-    throw new UnauthorizedException('Error al validar credenciales');
+      this.logger.error(`Error al validar contraseña: ${error}`);
+      throw new UnauthorizedException('Error al validar credenciales');
     }
 
     if (!isPasswordValid) {
@@ -118,13 +120,12 @@ export class AuthService {
     //3.Actualizar la contraseña en la base de datos
     await this.usersService.updatePassword(user.id_usuario, hash, salt);
 
-    this.logger.log(`Contraseña actualizada exitosamente para usuario ${user.correo}`);
+    this.logger.log(
+      `Contraseña actualizada exitosamente para usuario ${user.correo}`,
+    );
 
     return {
       message: 'Contraseña actualizada exitosamente',
     };
-
-}
-
-
+  }
 }

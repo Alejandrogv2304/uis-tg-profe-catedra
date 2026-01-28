@@ -18,7 +18,9 @@ async function bootstrap() {
   // Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('API UIS TG Profe Cátedra')
-    .setDescription('Documentación de la API para el sistema de profesores de cátedra')
+    .setDescription(
+      'Documentación de la API para el sistema de profesores de cátedra',
+    )
     .setVersion('1.0')
     .addTag('profesores')
     .addBearerAuth() // Opcional: si usarás autenticación JWT

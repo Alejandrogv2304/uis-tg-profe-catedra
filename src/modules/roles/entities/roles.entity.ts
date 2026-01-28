@@ -10,7 +10,6 @@ import {
   JoinTable,
 } from 'typeorm';
 
-
 @Entity('role')
 export class Role {
   @PrimaryGeneratedColumn({ name: 'id_rol' })
@@ -33,7 +32,7 @@ export class Role {
   @JoinTable({
     name: 'rol_permiso',
     joinColumn: { name: 'id_rol' },
-    inverseJoinColumn: { name: 'id_permiso' }
+    inverseJoinColumn: { name: 'id_permiso' },
   })
   permisos: Permission[];
 }

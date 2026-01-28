@@ -1,5 +1,5 @@
-import { Role } from "src/modules/roles/entities/roles.entity";
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Role } from 'src/modules/roles/entities/roles.entity';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 // Permission entity
 @Entity('permiso')
@@ -8,7 +8,7 @@ export class Permission {
   id_permiso: number;
 
   @Column({ length: 50, unique: true })
-  nombre: string; 
+  nombre: string;
 
   @Column({ length: 200, nullable: true })
   descripcion?: string;

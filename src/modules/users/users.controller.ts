@@ -4,15 +4,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller('api/v1/users')
 export class UsersController {
-    constructor(
-        private readonly usersService: UsersService
-    ){}
+  constructor(private readonly usersService: UsersService) {}
 
-    //Controlador para el método de creación de usuario
-    @Post()
-    async createUser(
-        @Body() createUserDto: CreateUserDto,
-    ){
-        return this.usersService.createUser(createUserDto);
-    }
+  //Controlador para el método de creación de usuario
+  @Post()
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.createUser(createUserDto);
+  }
 }

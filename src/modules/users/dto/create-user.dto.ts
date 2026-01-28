@@ -1,10 +1,9 @@
-import { 
-  IsEmail, 
-  IsNotEmpty, 
-  IsString, 
-  MinLength, 
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MinLength,
   MaxLength,
-  IsOptional,
   IsInt,
   IsPositive,
 } from 'class-validator';

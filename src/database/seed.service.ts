@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Role } from '../modules/roles/entities/roles.entity';
 
-
 //Este módulo hace una inicialización al arrancar la aplicación verificando si hay un usuario o no
 //Si no hay usuarios registrados, crea un usuario administrador
 @Injectable()
@@ -26,9 +25,19 @@ export class SeedService implements OnModuleInit {
 
   private async seedRoles() {
     const rolesDefault = [
-      { nombre: 'administrador', descripcion: 'Administrador con acceso total al sistema' },
-      { nombre: 'miembroConsejo', descripcion: 'Miembro del consejo con permisos de evaluacion y revision' },
-      { nombre: 'secretaria', descripcion: 'Secretaria con permisos administrativos limitados' },
+      {
+        nombre: 'administrador',
+        descripcion: 'Administrador con acceso total al sistema',
+      },
+      {
+        nombre: 'miembroConsejo',
+        descripcion:
+          'Miembro del consejo con permisos de evaluacion y revision',
+      },
+      {
+        nombre: 'secretaria',
+        descripcion: 'Secretaria con permisos administrativos limitados',
+      },
     ];
 
     for (const rolData of rolesDefault) {
@@ -44,33 +53,35 @@ export class SeedService implements OnModuleInit {
     }
   }
 
-
   private async seedAdminUser() {
-    const adminEmail = this.configService.get('ADMIN_EMAIL');
-    const adminPassword = this.configService.get('ADMIN_PASSWORD');
+    const adminEmail = this.configService.get<string>('ADMIN_EMAIL') ?? '';
+    const adminPassword =
+      this.configService.get<string>('ADMIN_PASSWORD') ?? '';
 
     if (!adminEmail || !adminPassword) {
       this.logger.warn(' ADMIN_EMAIL o ADMIN_PASSWORD no están configurados');
       return;
     }
 
-    const existingAdmin = await this.usersService.findByEmail(adminEmail);
+    const existingAdmin = await this.usersService.findByEmail(
+      String(adminEmail),
+    );
 
     if (existingAdmin) {
       this.logger.log(' Usuario admin ya existe');
       return;
     }
 
-  
-
-    await this.usersService.createUser({
-      correo: adminEmail,
-      password: adminPassword,
+    const userResult = await this.usersService.createUser({
+      correo: String(adminEmail),
+      password: String(adminPassword),
       nombres: 'Admin',
       apellidos: 'Sistema',
       id_rol: 1, //Le ponemos el rol de administrador
     });
 
-    this.logger.log(' Usuario admin creado exitosamente');
+    this.logger.log(
+      ` Usuario admin creado exitosamente: ${userResult.message}`,
+    );
   }
 }

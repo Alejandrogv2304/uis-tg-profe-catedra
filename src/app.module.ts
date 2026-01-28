@@ -8,7 +8,7 @@ import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { DatabaseModule } from './database/database.module';
-
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
@@ -36,6 +36,7 @@ import { DatabaseModule } from './database/database.module';
     RolesModule,
     PermissionModule,
     DatabaseModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
