@@ -13,6 +13,12 @@ type SendTemplateEmailInput = {
   replyTo?: string;
 };
 
+type PasswordResetContext = {
+  nombres: string;
+  token: string;
+  expiresMinutes: number;
+};
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
@@ -121,4 +127,17 @@ export class EmailService {
       throw error;
     }
   }
+
+
+  async sendPasswordResetEmail(
+  to: string,
+  context: PasswordResetContext,
+): Promise<string> {
+  return this.sendTemplateEmail({
+    to,
+    subject: 'Recuperación de contraseña',
+    template: 'password-reset',
+    context,
+  });
+ }
 }

@@ -1,10 +1,18 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { EmailService } from '../email/email.service';
+import { PasswordResetToken } from './entities/passwordreset.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { generateResetToken, hashToken } from './password-reset-util';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+
 
 @Injectable()
 export class AuthService {
@@ -14,6 +22,10 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
+
+     @InjectRepository(PasswordResetToken)
+    private readonly passwordResetTokenRepository: Repository<PasswordResetToken>,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -127,5 +139,103 @@ export class AuthService {
     return {
       message: 'Contraseña actualizada exitosamente',
     };
+  }
+
+
+    async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
+    const { correo } = forgotPasswordDto;
+    this.logger.log(`Solicitud de recuperación de contraseña`);
+
+    const user = await this.usersService.findByEmail(correo);
+
+    
+    if (!user || user.deleted_at) {
+      this.logger.warn(
+        `Recuperación solicitada para correo inexistente/inactivo`,
+      );
+      return {
+        message:
+          'Si el correo existe, enviaremos instrucciones para restablecer la contraseña.',
+      };
+    }
+
+    // Invalida tokens previos
+    await this.passwordResetTokenRepository.update(
+      { user: { id_usuario: user.id_usuario } as any, used_at: IsNull() },
+      { used_at: new Date() },
+    );
+
+    const token = generateResetToken();
+    const tokenHash = hashToken(token);
+
+    const expiresMinutes = Number(
+      this.configService.get('PASSWORD_RESET_EXPIRES_MINUTES') ?? 5,
+    );
+    const expiresAt = new Date(Date.now() + expiresMinutes * 60 * 1000);
+
+    await this.passwordResetTokenRepository.save({
+      user,
+      token_hash: tokenHash,
+      expires_at: expiresAt,
+      used_at: null,
+    });
+
+    try {
+      await this.emailService.sendPasswordResetEmail(user.correo, {
+        nombres: user.nombres,
+        token,
+        expiresMinutes,
+      });
+      this.logger.log(`Correo de recuperación enviado a ${user.correo}`);
+    } catch (error) {
+      
+      this.logger.error(`Error enviando correo de recuperación: ${error}`);
+    }
+
+    return {
+      message:
+        'Si el correo existe, enviaremos instrucciones para restablecer la contraseña.',
+    };
+  }
+
+  
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    const { token, new_password } = resetPasswordDto;
+    this.logger.log(`Intento de restablecer contraseña`);
+
+    const tokenHash = hashToken(token);
+
+    const record = await this.passwordResetTokenRepository.findOne({
+      where: { token_hash: tokenHash, used_at: IsNull() },
+      relations: { user: true },
+    });
+
+    if (!record) {
+      this.logger.warn(`Reset fallido: token inválido o usado`);
+      throw new BadRequestException('Token inválido');
+    }
+
+    if (record.expires_at.getTime() < Date.now()) {
+      this.logger.warn(`Reset fallido: token expirado`);
+      throw new BadRequestException('Token expirado');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(new_password, salt);
+
+    await this.usersService.updatePassword(record.user.id_usuario, hash, salt);
+
+    record.used_at = new Date();
+    await this.passwordResetTokenRepository.save(record);
+
+    this.logger.log(
+      `Contraseña restablecida exitosamente para ${record.user.correo}`,
+    );
+
+    return { message: 'Contraseña restablecida exitosamente' };
   }
 }
