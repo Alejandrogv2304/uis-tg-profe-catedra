@@ -1,4 +1,4 @@
-import { Permission } from 'src/modules/permission/entities/permission.entity';
+
 import { User } from 'src/modules/users/entities/user.entity';
 import {
   Entity,
@@ -28,11 +28,5 @@ export class Role {
   @DeleteDateColumn()
   deleted_at?: Date;
 
-  @ManyToMany(() => Permission, (permission) => permission.roles)
-  @JoinTable({
-    name: 'rol_permiso',
-    joinColumn: { name: 'id_rol' },
-    inverseJoinColumn: { name: 'id_permiso' },
-  })
-  permisos: Permission[];
+ 
 }

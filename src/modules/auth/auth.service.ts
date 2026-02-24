@@ -56,14 +56,14 @@ export class AuthService {
     }
 
     // Mapeo de permisos
-    const permisos = user.rol?.permisos?.map((p) => p.nombre) || [];
+    // const permisos = user.rol?.permisos?.map((p) => p.nombre) || [];
 
     // 4. Creación de payloads
     const payloadAccess = {
       sub: user.id_usuario,
       correo: user.correo,
       rol: user.rol?.id_rol,
-      permisos,
+      // permisos,
     };
 
     const payloadRefresh = { sub: user.id_usuario };
@@ -91,7 +91,7 @@ export class AuthService {
         nombres: user.nombres,
         correo: user.correo,
         rol: user.rol?.id_rol,
-        permisos,
+        // permisos,
       },
     };
   }

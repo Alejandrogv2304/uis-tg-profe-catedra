@@ -6,9 +6,15 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
-import { PermissionModule } from './modules/permission/permission.module';
 import { DatabaseModule } from './database/database.module';
 import { EmailModule } from './modules/email/email.module';
+import { CargaDatosInicialService } from './modules/carga_datos_inicial/carga_datos_inicial.service';
+import { CargaDatosInicialController } from './modules/carga_datos_inicial/carga_datos_inicial.controller';
+import { CargaDatosInicialModule } from './modules/carga_datos_inicial/carga_datos_inicial.module';
+import { AspirantesModule } from './modules/aspirantes/aspirantes.module';
+import { PostulacionesModule } from './modules/postulaciones/postulaciones.module';
+import { AreaDesempeñoModule } from './modules/area_desempeño/area_desempeño.module';
+import { ConvocatoriaModule } from './modules/convocatoria/convocatoria.module';
 
 @Module({
   imports: [
@@ -34,11 +40,15 @@ import { EmailModule } from './modules/email/email.module';
     AuthModule,
     UsersModule,
     RolesModule,
-    PermissionModule,
     DatabaseModule,
     EmailModule,
+    CargaDatosInicialModule,
+    AspirantesModule,
+    PostulacionesModule,
+    AreaDesempeñoModule,
+    ConvocatoriaModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, CargaDatosInicialController],
+  providers: [AppService, CargaDatosInicialService],
 })
 export class AppModule {}

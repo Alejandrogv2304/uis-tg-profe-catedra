@@ -3,7 +3,9 @@ import { UsersService } from '../modules/users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Role } from '../modules/roles/entities/roles.entity';
+import { AreaDesempenoEntity } from 'src/modules/area_desempeño/entities/area_desempeño.entity';
+import { ConvocatoriaEntity } from 'src/modules/convocatoria/entities/convocatoria.entity';
+
 
 //Este módulo hace una inicialización al arrancar la aplicación verificando si hay un usuario o no
 //Si no hay usuarios registrados, crea un usuario administrador
@@ -14,45 +16,64 @@ export class SeedService implements OnModuleInit {
   constructor(
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
-    @InjectRepository(Role)
-    private readonly rolesRepository: Repository<Role>,
+
+    @InjectRepository(AreaDesempenoEntity)
+    private readonly areasDesempeñoRepository: Repository<AreaDesempenoEntity>,
+
+     @InjectRepository(ConvocatoriaEntity)
+    private readonly convocatoriaRepository: Repository<ConvocatoriaEntity>,
   ) {}
 
   async onModuleInit() {
-    await this.seedRoles();
+    await this.seedInformaciónBase();
     await this.seedAdminUser();
   }
 
-  private async seedRoles() {
-    const rolesDefault = [
+
+private async seedInformaciónBase(){
+  //Aquí se inicializa la información base del sistema, areas de desempeño, temas,perfiles y toda la demás información estática.
+  const AreasDesempeñoDefault = [
       {
-        nombre: 'administrador',
-        descripcion: 'Administrador con acceso total al sistema',
+        nombre: 'algoritmica e informatica',
       },
       {
-        nombre: 'miembroConsejo',
-        descripcion:
-          'Miembro del consejo con permisos de evaluacion y revision',
+        nombre: 'bases de datos',
       },
       {
-        nombre: 'secretaria',
-        descripcion: 'Secretaria con permisos administrativos limitados',
+        nombre: 'inteligencia artificial',
       },
     ];
 
-    for (const rolData of rolesDefault) {
-      const exists = await this.rolesRepository.findOne({
-        where: { nombre: rolData.nombre },
-      });
+    const existingAreas = await this.areasDesempeñoRepository.find();
+    if (existingAreas.length === 0) {
+      const areasToInsert = AreasDesempeñoDefault.map((area) =>
+        this.areasDesempeñoRepository.create(area),
+      );
+      await this.areasDesempeñoRepository.save(areasToInsert);
+      this.logger.log(' Áreas de desempeño inicializadas');
+    } else {
+      this.logger.log(' Áreas de desempeño ya existen, no se inicializan');
+    }
 
-      if (!exists) {
-        const rol = this.rolesRepository.create(rolData);
-        await this.rolesRepository.save(rol);
-        this.logger.log(` Rol ${rolData.nombre} creado`);
-      }
+    const Convocatorias = [{
+     periodo: '2026-1',
+     escuela: 'Ingeniería de Sistemas e Informatica',
+    },{
+     periodo: '2026-prueba',
+     escuela: 'Ingeniería de Sistemas e Informatica',
+    }];
+
+    const existingConvocatorias = await this.convocatoriaRepository.find();
+    if (existingConvocatorias.length === 0) {
+      const convocatoriasToInsert = Convocatorias.map((convocatoria) =>
+        this.convocatoriaRepository.create(convocatoria),
+      );
+      await this.convocatoriaRepository.save(convocatoriasToInsert);
+      this.logger.log(' Convocatorias inicializadas');
+    } else {
+      this.logger.log(' Convocatorias ya existen, no se inicializan');
     }
   }
-
   private async seedAdminUser() {
     const adminEmail = this.configService.get<string>('ADMIN_EMAIL') ?? '';
     const adminPassword =
@@ -76,8 +97,7 @@ export class SeedService implements OnModuleInit {
       correo: String(adminEmail),
       password: String(adminPassword),
       nombres: 'Admin',
-      apellidos: 'Sistema',
-      id_rol: 1, //Le ponemos el rol de administrador
+      apellidos: 'Sistema', 
     });
 
     this.logger.log(
