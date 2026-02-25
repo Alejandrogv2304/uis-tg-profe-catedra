@@ -5,6 +5,18 @@ export function norm(s: unknown): string {
     .replace(/\s+/g, ' ');
 }
 
+/** Normaliza a minúsculas (trim + colapsa espacios + lowercase) */
+export function normLower(s: unknown): string {
+  return norm(s).toLowerCase();
+}
+
+/** Normaliza a Title Case: primera letra de cada palabra en mayúscula */
+export function normTitle(s: unknown): string {
+  return norm(s)
+    .toLowerCase()
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
 export function normKey(s: unknown): string {
   return norm(s)
     .toLowerCase()
