@@ -5,7 +5,11 @@ import {
   Unique,
   Index,
   DeleteDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { AspiranteEntity } from '../../aspirantes/entities/aspirantes.entity';
+import { AreaDesempenoEntity } from '../../area_desempeño/entities/area_desempeño.entity';
 
 
 //Etapas de la postulación
@@ -24,6 +28,10 @@ export class PostulacionEntity {
   @Column({ name: 'aspirante_id', type: 'uuid' })
   aspiranteId: string;
 
+  @ManyToOne(() => AspiranteEntity, aspirante => aspirante.postulaciones, { eager: false })
+  @JoinColumn({ name: 'aspirante_id' })
+  aspirante: AspiranteEntity;
+
   @Column({ name: 'convocatoria_id', type: 'uuid' })
   convocatoriaId: string;
 
@@ -41,6 +49,10 @@ export class PostulacionEntity {
 
   @Column({ name: 'area_desempeno_id', type: 'uuid' })
   areaDesempenoId: string;
+
+  @ManyToOne(() => AreaDesempenoEntity, area => area.postulaciones, { eager: false })
+  @JoinColumn({ name: 'area_desempeno_id' })
+  areaDesempeno: AreaDesempenoEntity;
 
   @Column({ type: 'enum', enum: PostulacionEstado })
   estado: PostulacionEstado;

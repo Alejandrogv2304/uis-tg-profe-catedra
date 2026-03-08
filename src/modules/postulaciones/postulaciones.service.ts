@@ -20,8 +20,8 @@ export class PostulacionesService {
     
       const postulaciones = await this.postulacionesRepository
       .createQueryBuilder('p')
-      .leftJoin('p.aspirantes', 'a')
-      .leftJoin('p.areas_desempeño', 'ad')
+      .leftJoin('p.aspirante', 'a')
+      .leftJoin('p.areaDesempeno', 'ad')
       .select([
         'p.id AS postulacionId',
         'p.estado AS estado',
