@@ -6,6 +6,14 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Habilita CORS para permitir peticiones desde Angular
+  app.enableCors({
+    origin: true, // En desarrollo permite cualquier origen. En producción especifica: ['http://localhost:4200', 'https://tu-dominio.com']
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   // Habilita validaciones globales
   app.useGlobalPipes(
     new ValidationPipe({
