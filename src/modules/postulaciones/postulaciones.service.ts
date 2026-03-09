@@ -23,20 +23,21 @@ export class PostulacionesService {
       .leftJoin('p.aspirante', 'a')
       .leftJoin('p.areaDesempeno', 'ad')
       .select([
-        'p.id AS postulacionId',
-        'p.estado AS estado',
-        'p.perfil AS perfil',
-        'p.telefono AS telefono',
-        'p.correo AS correo',
-        'p.sede AS sede',
-        'p.aspiranteId AS aspiranteId',
-        'p.areaDesempenoId AS areaDesempenoId',
+        'p.id AS "postulacionId"',
+        'p.convocatoriaId AS "convocatoriaId"',
+        'p.estado AS "estado"',
+        'p.perfil AS "perfil"',
+        'p.telefono AS "telefono"',
+        'p.correo AS "correo"',
+        'p.sede AS "sede"',
+        'p.aspiranteId AS "aspiranteId"',
+        'p.areaDesempenoId AS "areaDesempenoId"',
 
-        'a.nombre AS nombre',
-        'a.numeroDocumento AS numeroDocumento',
-        'a.tipoDocumento AS tipoDocumento',
+        'a.nombre AS "nombre"',
+        'a.numeroDocumento AS "numeroDocumento"',
+        'a.tipoDocumento AS "tipoDocumento"',
 
-        'ad.nombre AS areaDesempenoNombre',
+        'ad.nombre AS "areaDesempenoNombre"',
        
       ])
       .where('p.convocatoriaId = :convocatoriaId', { convocatoriaId })
