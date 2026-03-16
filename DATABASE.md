@@ -5,196 +5,114 @@
 - Docker Desktop instalado y corriendo
 - Node.js instalado
 
-## 🚀 Inicio rápido
-
-### 1. Levantar la base de datos
+## ⚡ Configuración inicial (primera vez)
 
 ```bash
-npm run docker:up
-```
+# 1. Crear red y volumen
+docker network create uis-scpc-network
+docker volume create uis-scpc-postgres-data
 
-Esto iniciará:
-- **PostgreSQL 17** en `localhost:5432`
-- **pgAdmin** (interfaz web) en `http://localhost:5050`
+# 2. Levantar PostgreSQL
+docker run -d --name uis-scpc-postgres --network uis-scpc-network --restart unless-stopped -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres123 -e POSTGRES_DB=uis_scpc_db -p 5432:5432 -v uis-scpc-postgres-data:/var/lib/postgresql/data postgres:17-alpine
 
-### 2. Verificar que está corriendo
+# 3. Verificar
+docker ps
 
-```bash
-npm run docker:logs
-```
-
-### 3. Iniciar la aplicación NestJS
-
-```bash
+# 4. Instalar e iniciar la aplicación
+npm install
 npm run start:dev
 ```
 
-## 🔧 Comandos disponibles
+**Siguientes veces:**
+```bash
+docker start uis-scpc-postgres
+npm run start:dev
+```
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm run docker:up` | Inicia los contenedores en segundo plano |
-| `npm run docker:down` | Detiene y elimina los contenedores |
-| `npm run docker:logs` | Ver logs en tiempo real |
-| `npm run docker:restart` | Reinicia los contenedores |
+## � Credenciales por defecto
 
-## 🔐 Credenciales por defecto
-
-### PostgreSQL
 - Host: `localhost`
 - Puerto: `5432`
 - Usuario: `postgres`
 - Contraseña: `postgres123`
-- Base de datos: `uis_tg_db`
+- Base de datos: `uis_scpc_db`
 
-### pgAdmin (opcional)
-- URL: http://localhost:5050
-- Email: `admin@admin.com`
-- Password: `admin123`
-
-## 📁 Estructura de archivos
-
-```
-├── docker-compose.yml    # Configuración de Docker
-├── .env                  # Variables de entorno (no subir a git)
-├── .env.example          # Plantilla de variables
-└── src/
-    └── app.module.ts     # Configuración de TypeORM
-```
-
-## 🛠️ Crear tu primera entidad
-
-### 1. Crear archivo de entidad
-
-```typescript
-// src/users/entities/user.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-
-@Entity('users')
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ unique: true })
-  email: string;
-
-  @Column()
-  name: string;
-
-  @Column({ default: true })
-  isActive: boolean;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-}
-```
-
-### 2. Importar en un módulo
-
-```typescript
-// src/users/users.module.ts
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-
-@Module({
-  imports: [TypeOrmModule.forFeature([User])],
-  // ... tu código
-})
-export class UsersModule {}
-```
-
-### 3. Las tablas se crean automáticamente
-
-En desarrollo, TypeORM crea/actualiza las tablas automáticamente gracias a `synchronize: true`.
-
-⚠️ **IMPORTANTE**: En producción, `synchronize` debe ser `false` y usar migraciones.
-
-## 🗄️ Conectarse a la BD con pgAdmin
-
-1. Abrir http://localhost:5050
-2. Login con las credenciales de arriba
-3. Add New Server:
-   - **General > Name**: `Local PostgreSQL`
-   - **Connection > Host**: `postgres` (nombre del servicio en Docker)
-   - **Connection > Port**: `5432`
-   - **Connection > Username**: `postgres`
-   - **Connection > Password**: `postgres123`
-
-## 🔄 Workflow de desarrollo
+## 🔧 Comandos útiles
 
 ```bash
-# 1. Levantar Docker
-npm run docker:up
+docker ps                              # Ver contenedores activos
+docker logs -f uis-scpc-postgres       # Ver logs en tiempo real
+docker stop uis-scpc-postgres          # Detener PostgreSQL
+docker start uis-scpc-postgres         # Iniciar PostgreSQL
+docker restart uis-scpc-postgres       # Reiniciar PostgreSQL
+docker exec -it uis-scpc-postgres psql -U postgres -d uis_scpc_db  # Acceder a consola PostgreSQL
+```
 
-# 2. Desarrollar
-npm run start:dev
+## 🐳 Correr backend en Docker (opcional)
 
-# 3. Cuando termines
-npm run docker:down
+```bash
+# 1. Construir imagen
+docker build -t uis-scpc-profe-catedra .
+
+# 2. Correr contenedor
+docker run -d --name uis-scpc-app --network uis-scpc-network --env-file .env -e DB_HOST=uis-scpc-postgres -p 3000:3000 uis-scpc-profe-catedra
+
+# 3. Ver logs
+docker logs -f uis-scpc-app
+```
+
+**⚠️ Nota:** Cuando el backend corre en Docker, usar `DB_HOST=uis-scpc-postgres` en lugar de `localhost`.
+
+## 🧹 Limpieza completa
+
+```bash
+# Detener y eliminar todo (⚠️ BORRA TODOS LOS DATOS)
+docker stop uis-scpc-postgres uis-scpc-app
+docker rm uis-scpc-postgres uis-scpc-app
+docker volume rm uis-scpc-postgres-data
+docker network rm uis-scpc-network
 ```
 
 ## ⚠️ Troubleshooting
 
-### Error: "database does not exist"
+### Error: "port 5432 is already allocated"
+Detén el PostgreSQL local o usa otro puerto:
 ```bash
-npm run docker:down
-npm run docker:up
+# Usar puerto 5433
+docker run -d --name uis-scpc-postgres --network uis-scpc-network -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres123 -e POSTGRES_DB=uis_scpc_db -p 5433:5432 -v uis-scpc-postgres-data:/var/lib/postgresql/data postgres:17-alpine
 ```
+Actualizar `.env`: `DB_PORT=5433`
+
+### Error: "network/volume already exists"
+Ya existe, continúa con el siguiente paso.
 
 ### Ver qué está corriendo
 ```bash
-docker ps
+docker ps                    # Contenedores activos
+docker ps -a                 # Todos los contenedores
+docker volume ls             # Volúmenes
+docker network ls            # Redes
 ```
 
-### Eliminar todo (incluidos datos)
+## 🌍 Despliegue en producción
+
 ```bash
-docker-compose down -v
-```
-⚠️ Esto borra todos los datos de la BD.
+# En el servidor
+docker network create uis-scpc-network
+docker volume create uis-scpc-postgres-data
 
-### Error de puerto ocupado
-Si el puerto 5432 ya está en uso, cambia en `docker-compose.yml`:
-```yaml
-ports:
-  - '5433:5432'  # Usar puerto 5433 en tu máquina
-```
+# Levantar BD
+docker run -d --name uis-scpc-postgres --network uis-scpc-network --restart always -e POSTGRES_USER=tu_usuario -e POSTGRES_PASSWORD=tu_password_segura -e POSTGRES_DB=uis_scpc_db -p 5432:5432 -v uis-scpc-postgres-data:/var/lib/postgresql/data postgres:17-alpine
 
-## 📦 Variables de entorno
-
-### Desarrollo (.env)
-```env
-NODE_ENV=development
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=postgres123
-DB_DATABASE=uis_tg_db
+# Levantar backend
+docker build -t uis-scpc-profe-catedra .
+docker run -d --name uis-scpc-app --network uis-scpc-network --env-file .env -e DB_HOST=uis-scpc-postgres -e NODE_ENV=production -p 3000:3000 uis-scpc-profe-catedra
 ```
 
-### Producción
-En el servidor, configura las variables con valores seguros:
-- Contraseñas fuertes
-- `NODE_ENV=production`
-- `synchronize: false` en TypeORM
-
-## 🌍 Desplegar en servidor
-
-Cuando despliegues:
-
-1. **NO uses docker-compose en producción** (usa BD gestionada)
-2. Usa servicios como:
-   - AWS RDS
-   - Digital Ocean Managed Databases
-   - Railway
-   - Render
-
-3. Configura las variables de entorno en el servidor
-
-4. Usa migraciones en lugar de `synchronize: true`
+**⚠️ Importante en producción:**
+- Usar contraseñas seguras
+- `synchronize: false` en TypeORM (usar migraciones)
+- Configurar backups automáticos
 
 ## 📚 Recursos
 

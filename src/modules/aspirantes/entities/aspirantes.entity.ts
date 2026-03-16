@@ -1,5 +1,6 @@
 
-import { Entity, PrimaryGeneratedColumn, Column, Unique, Index } from 'typeorm';
+import { PostulacionEntity } from 'src/modules/postulaciones/entities/postulaciones.entity';
+import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm';
 
 @Entity('aspirantes')
 @Unique('UQ_aspirante_tipo_numdoc', ['tipoDocumento', 'numeroDocumento'])
@@ -23,4 +24,7 @@ export class AspiranteEntity {
 
   @Column({ name: 'tipo_documento', type: 'varchar', length: 10 })
   tipoDocumento: string;
+  
+  @OneToMany(() => PostulacionEntity, postulacion => postulacion.aspirante)
+  postulaciones: PostulacionEntity[];
 }

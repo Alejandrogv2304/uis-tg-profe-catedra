@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import { BadRequestException } from '@nestjs/common';
-import { excelRowError, isEmail, norm, normKey } from './normalizacion';
+import { excelRowError, isEmail, norm, normKey, normLower, normTitle } from './normalizacion';
 import { PostulacionEstado } from 'src/modules/postulaciones/entities/postulaciones.entity';
 
 export type UisardParsedRow = {
@@ -124,10 +124,10 @@ export async function parseUisardExcel(buffer: Buffer): Promise<UisardParsedRow[
 
     const tipoDocumento = norm(cellToString(row.getCell(headerMap.tipoDocumento).value));
     const numeroDocumento = norm(cellToString(row.getCell(headerMap.numeroDocumento).value));
-    const nombre = norm(cellToString(row.getCell(headerMap.nombre).value));
+    const nombre = normTitle(cellToString(row.getCell(headerMap.nombre).value));
     const correo = norm(cellToString(row.getCell(headerMap.correo).value)).toLowerCase();
     const telefono = norm(cellToString(row.getCell(headerMap.telefono).value));
-    const sede = norm(cellToString(row.getCell(headerMap.sede).value));
+    const sede = normLower(cellToString(row.getCell(headerMap.sede).value));
     const areaNombre = norm(cellToString(row.getCell(headerMap.areaNombre).value));
     const cumpleRaw = normKey(cellToString(row.getCell(headerMap.cumple).value));
     const perfil = norm(cellToString(row.getCell(headerMap.perfil).value));
