@@ -15,6 +15,7 @@ import { AspirantesModule } from './modules/aspirantes/aspirantes.module';
 import { PostulacionesModule } from './modules/postulaciones/postulaciones.module';
 import { AreaDesempeñoModule } from './modules/area_desempeño/area_desempeño.module';
 import { ConvocatoriaModule } from './modules/convocatoria/convocatoria.module';
+import { EvaluacionHojaDeVidaModule } from './modules/evaluacion_hoja_de_vida/evaluacion_hoja_de_vida.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ConvocatoriaModule } from './modules/convocatoria/convocatoria.module';
     PostulacionesModule,
     AreaDesempeñoModule,
     ConvocatoriaModule,
+    EvaluacionHojaDeVidaModule,
   ],
   controllers: [AppController, CargaDatosInicialController],
   providers: [AppService, CargaDatosInicialService],

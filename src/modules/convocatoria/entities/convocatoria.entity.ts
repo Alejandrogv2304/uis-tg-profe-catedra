@@ -11,6 +11,7 @@ export class ConvocatoriaEntity {
 
   @Column({type: 'varchar', length: 100})
   escuela: string;
+  
 
  @DeleteDateColumn({ name: 'deletedat' })
  deletedAt?: Date | null;
